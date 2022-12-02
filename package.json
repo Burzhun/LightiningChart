@@ -2,7 +2,7 @@
   "name": "chart-react-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://gitname.github.io/LightiningChart",
+  "homepage": "https://burzhun.github.io/LightiningChart/",
   "dependencies": {
     "@arction/lcjs": "^3.4.0",
     "@influxdata/influxdb-client": "^1.32.0",
