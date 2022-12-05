@@ -74,7 +74,7 @@ function Charts() {
       const l = studySignals.length;
       const data = [];
       studySignals.forEach((signal, i) => {
-        fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/signalassinglesegment?sampleRate=10&signalId=${signal.SignalId}&startTime=${interval.start}&endTime=${interval.end}`)
+        fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/signalassinglesegment?sampleRate=0.25&signalId=${signal.SignalId}&startTime=${interval.start}&endTime=${interval.end}`)
           .then((response) => {
             return response.json();
           })
