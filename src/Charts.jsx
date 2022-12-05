@@ -328,7 +328,7 @@ function Charts() {
         );
         zoomBandChart.band.setHighlighted(true);
         zoomBandChart.band.setValueStart(0);
-        zoomBandChart.band.setValueEnd(300000);
+        zoomBandChart.band.setValueEnd(120000);
       }
       splineSeries1.add(signalData.data.map((point, i) => ({ x: (i * 1000) / signalData.rate, y: point })));
       const min = splineSeries1.getYMin() - 30;
@@ -427,7 +427,7 @@ function Charts() {
         xAxisList[i].setInterval(start, end, false, true);
       }
     });
-    xAxisList[0].setInterval(0, 300000);
+    xAxisList[0].setInterval(0, 120000);
     //setSignalsData(null);
   }, [signalsData, interval, events]);
 
