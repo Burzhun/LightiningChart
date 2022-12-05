@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/LightiningChart/static/css/main.073c9b0a.css",
-    "main.js": "/LightiningChart/static/js/main.2e2744c1.js",
+    "main.js": "/LightiningChart/static/js/main.5a001a60.js",
     "static/js/787.f9e1904b.chunk.js": "/LightiningChart/static/js/787.f9e1904b.chunk.js",
     "static/media/logo.svg": "/LightiningChart/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/LightiningChart/index.html",
     "main.073c9b0a.css.map": "/LightiningChart/static/css/main.073c9b0a.css.map",
-    "main.2e2744c1.js.map": "/LightiningChart/static/js/main.2e2744c1.js.map",
+    "main.5a001a60.js.map": "/LightiningChart/static/js/main.5a001a60.js.map",
     "787.f9e1904b.chunk.js.map": "/LightiningChart/static/js/787.f9e1904b.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.2e2744c1.js"
+    "static/js/main.5a001a60.js"
   ]
 }
