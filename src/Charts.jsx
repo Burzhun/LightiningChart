@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 const lcjs = require("@arction/lcjs");
 
 const studyId = "142";
@@ -45,14 +45,15 @@ const eventY = {
   CandidateEvent: 90,
   Tachycardia: 170,
 };
-
+var timeoutId = null;
 function Charts() {
   const [studyData, setStudyData] = useState(null);
   const [studySignals, setStudySignals] = useState([]);
   const [signalsData, setSignalsData] = useState(null);
   const [interval, setInterval] = useState({});
-  const [events, setEvents] = useState({});
+  const [events, setEvents] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const loadStudyData = () => {
     fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/sleepstudyheaderinfo?sleepStudyId=${studyId}`)
       .then((response) => response.json())
@@ -64,7 +65,7 @@ function Charts() {
   const loadStudySignals = () => {
     fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/sleepstudysignals?sleepstudyid=${studyId}`)
       .then((response) => response.json())
-      .then((result) => setStudySignals([result[5], result[0], result[6], result[2], result[8]]));
+      .then((result) => setStudySignals([result[5], result[0], result[6], result[2], result[8], result[9]]));
   };
 
   const loadSignalsData = useCallback(
@@ -73,7 +74,7 @@ function Charts() {
       const l = studySignals.length;
       const data = [];
       studySignals.forEach((signal, i) => {
-        fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/signalassinglesegment?sampleRate=0.25&signalId=${signal.SignalId}&startTime=${interval.start}&endTime=${interval.end}`)
+        fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/signalassinglesegment?sampleRate=10&signalId=${signal.SignalId}&startTime=${interval.start}&endTime=${interval.end}`)
           .then((response) => {
             return response.json();
           })
@@ -95,12 +96,13 @@ function Charts() {
   const loadEvents = useCallback(
     (interval) => {
       if (!studySignals.length) return;
-      const l = studySignals.length;
+      let l = studySignals.length;
       const data = {};
-      studySignals.forEach((signal) => {
+      studySignals.forEach((signal, i) => {
         fetch(`https://legacy-sleepscreen-v3.azurewebsites.net/sleepstudy/api/signalsleepevents?signalId=${signal.SignalId}&startTime=${interval.start}&endTime=${interval.end}`)
           .then((response) => response.json())
           .then((result) => {
+            l--;
             data[signal.SignalId] = result.reduce(
               (accumulator, currentValue) =>
                 accumulator.concat({
@@ -111,9 +113,8 @@ function Charts() {
                 }),
               []
             );
-
             //console.log(result);
-            if (Object.keys(data).length === l) setEvents(data);
+            if (l < 1) setEvents(data);
           });
       });
     },
@@ -122,6 +123,7 @@ function Charts() {
 
   const drawCharts = useCallback(() => {
     if (!interval || !signalsData) return;
+    console.log("redraw");
     const dateOrigin = new Date(interval.start);
     const dateOriginTime = dateOrigin.getTime();
     const chartNumber = signalsData.length;
@@ -130,7 +132,7 @@ function Charts() {
       numberOfColumns: 1,
       container: "chartContainer",
       numberOfRows: 4 * chartNumber + 4,
-      height: 1000,
+      height: window.innerHeight + 30,
       margin: { top: 50 },
     });
     dashboard.setSplitterStyle(emptyLine);
@@ -326,7 +328,7 @@ function Charts() {
         );
         zoomBandChart.band.setHighlighted(true);
         zoomBandChart.band.setValueStart(0);
-        zoomBandChart.band.setValueEnd(signalData.data.length * 10);
+        zoomBandChart.band.setValueEnd(300000);
       }
       splineSeries1.add(signalData.data.map((point, i) => ({ x: (i * 1000) / signalData.rate, y: point })));
       const min = splineSeries1.getYMin() - 30;
@@ -400,7 +402,6 @@ function Charts() {
           };
         };
         const categories = events[signalId].map((t) => addCategory(t.y));
-        const colorPalette = ColorPalettes.flatUI(categories.length);
         const fillStyles = categories.map((_, i) => new SolidFill({ color: ColorRGBA(0, 0, 0, 150) }));
         const strokeStyle = new SolidLine({
           fillStyle: new SolidFill({ color: ColorRGBA(0, 0, 0, 0) }),
@@ -428,12 +429,27 @@ function Charts() {
     });
     xAxisList[0].setInterval(0, 300000);
     //setSignalsData(null);
-  }, [signalsData, interval]);
+  }, [signalsData, interval, events]);
+
+  var timeoutId = useRef(null);
+
+  const handleResize = useCallback(() => {
+    if (signalsData && events) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(function () {
+        timeoutId = null; // You could leave this line out.
+        // Code to execute on resize goes here.
+        drawCharts();
+      }, 300);
+    }
+  }, [signalsData, events, drawCharts, timeoutId]);
 
   useEffect(() => {
     loadStudyData();
     loadStudySignals();
-  }, []);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   useEffect(() => {
     if (studyData && studySignals.length) {
@@ -450,8 +466,8 @@ function Charts() {
   }, [studyData, studySignals, loadSignalsData, loadEvents, interval.start]);
 
   useEffect(() => {
-    if (signalsData) drawCharts();
-  }, [signalsData, drawCharts]);
+    handleResize();
+  }, [handleResize]);
 
   return (
     <>
